@@ -4,12 +4,6 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Ceremonia de Graduación</title>
-    
-    <meta property="og:title" content="Ceremonia de Graduación">
-    <meta property="og:description" content="Te invitamos a celebrar con nosotros este maravilloso logro. ¡Confirma tu asistencia!">
-    <meta property="og:image" content="02_invitacion.png">
-    <meta property="og:url" content="">
-    <meta property="og:type" content="website">
     <style>
         /* RESETEO TOTAL */
         html, body {
@@ -19,6 +13,9 @@
             display: flex;
             flex-direction: column;
             align-items: center;
+            /* CANDADO 1: Evita que el usuario pueda seleccionar texto por accidente */
+            -webkit-user-select: none;
+            user-select: none;
         }
 
         .canvas-celular {
@@ -44,6 +41,8 @@
             padding: 0;
             display: block;
             border: none;
+            /* CANDADO 2: Anula la interacción táctil con las imágenes */
+            pointer-events: none;
         }
 
         /* 1. DISEÑO DEL CONTADOR */
@@ -99,19 +98,21 @@
             box-shadow: 0 4px 10px rgba(0,0,0,0.3);
             z-index: 5;
             white-space: nowrap; 
-            line-height: 1.5; 
+            line-height: 1.5;
+            pointer-events: auto; 
         }
 
-        /* 3. SCROLL DE ALUMNOS */
+        /* 3. SCROLL DE ALUMNOS (SOBRE LA SECCION 6) */
         .contenedor-scroll-alumnos {
             position: absolute;
-            top: 15%;    
-            bottom: 15%; 
+            top: 58%;    
+            bottom: 6%; 
             left: 10%;   
             right: 10%;  
             overflow-y: auto; 
-            line-height: 1.5; 
-            padding: 10px;
+            line-height: 1.3; 
+            padding: 5px;
+            pointer-events: auto; 
         }
 
         .contenedor-scroll-alumnos::-webkit-scrollbar { width: 4px; }
@@ -120,24 +121,27 @@
             border-radius: 4px;
         }
 
+        /* NUEVO DISEÑO DE TEXTO (ALUMNO ARRIBA, PADRINO ABAJO) */
         .alumno-item {
             text-align: center;
-            margin-bottom: 20px;
+            margin-bottom: 12px; 
             font-family: 'Arial', sans-serif;
         }
 
         .alumno-nombre {
             color: #042a67;
-            font-size: 1.2rem;
+            font-size: 0.9rem; /* Tamaño reducido */
             font-weight: bold;
             margin: 0;
+            white-space: nowrap; /* Obliga a mantener el nombre en una sola línea */
         }
 
-        .padrino-nombre {
-            color: #555555;
-            font-size: 0.9rem;
-            margin: 0;
+        .padrino-texto {
+            color: #777777; /* Gris oscuro elegante */
+            font-size: 0.75rem; /* Más pequeño que el nombre */
             font-style: italic;
+            font-weight: normal; /* Fuente delgada */
+            margin: 2px 0 0 0; /* Ligero margen de separación con el nombre */
         }
     </style>
 </head>
@@ -177,20 +181,20 @@
         </div>
 
         <div class="seccion">
-            <img src="06_fechas.png" alt="Fechas" onerror="this.src='06_fechas.jpg'">
-        </div>
-
-        <div class="seccion">
-            <img src="07_alumnos.png" alt="Fondo Lista" onerror="this.src='07_alumnos.jpg'">
+            <img src="06_fechas.png" alt="Fechas y Alumnos" onerror="this.src='06_fechas.jpg'">
+            
             <div class="contenedor-scroll-alumnos" id="caja-lista-alumnos">
-                <p style="text-align: center; color: #042a67; font-family: Arial;">Cargando alumnos...</p>
+                <p style="text-align: center; color: #042a67; font-family: Arial; font-size: 0.85rem;">Cargando alumnos...</p>
             </div>
         </div>
 
     </div>
 
     <script>
-        // 1. EL CONTADOR ACTUALIZADO AL 15 DE JULIO A LAS 10:00
+        // CANDADO 3: Bloqueo global del menú de clic derecho
+        document.addEventListener('contextmenu', event => event.preventDefault());
+
+        // EL CONTADOR (15 DE JULIO A LAS 10:00)
         const targetDate = new Date("July 15, 2026 10:00:00").getTime();
         const updateCountdown = setInterval(() => {
             const now = new Date().getTime();
@@ -212,7 +216,7 @@
             }
         }, 1000);
 
-        // 2. LECTOR AUTOMÁTICO DE EXCEL (CSV)
+        // LECTOR AUTOMÁTICO DE EXCEL (CSV) - EN DOS LÍNEAS (ALUMNO / PADRINO)
         fetch('salon1.csv')
             .then(response => {
                 if (!response.ok) throw new Error("No se encontró el CSV");
@@ -223,24 +227,28 @@
                 const cajaAlumnos = document.getElementById("caja-lista-alumnos");
                 cajaAlumnos.innerHTML = ""; 
 
-                for (let i = 1; i < renglones.length; i++) {
+                for (let i = 0; i < renglones.length; i++) {
                     if (renglones[i].trim() === "") continue; 
 
                     const columnas = renglones[i].split(/[,;]/);
                     
                     const alumno = columnas[0] ? columnas[0].trim() : "";
-                    const titulo = columnas[1] ? columnas[1].trim() : "Padrino"; // Lee si es Madrina o Padrinos
+                    const titulo = columnas[1] ? columnas[1].trim() : ""; 
                     const nombrePadrino = columnas[2] ? columnas[2].trim() : "";
 
-                    // Evita que aparezca la palabra si la celda del nombre está vacía
-                    const textoEtiqueta = nombrePadrino ? `${titulo}: ${nombrePadrino}` : "";
-
-                    const itemHTML = `
+                    // Lógica para estructurar el nombre arriba y padrino abajo
+                    let itemHTML = `
                         <div class="alumno-item">
                             <p class="alumno-nombre">${alumno}</p>
-                            <p class="padrino-nombre">${textoEtiqueta}</p>
-                        </div>
                     `;
+                    
+                    // Solo agrega la línea del padrino si la celda no está vacía
+                    if (nombrePadrino) {
+                        itemHTML += `<p class="padrino-texto">${titulo}: ${nombrePadrino}</p>`;
+                    }
+
+                    itemHTML += `</div>`;
+                    
                     cajaAlumnos.innerHTML += itemHTML;
                 }
             })
