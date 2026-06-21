@@ -13,7 +13,6 @@
             display: flex;
             flex-direction: column;
             align-items: center;
-            /* CANDADO 1: Evita que el usuario pueda seleccionar texto por accidente */
             -webkit-user-select: none;
             user-select: none;
         }
@@ -24,6 +23,7 @@
             background-color: #FFFFFF;
             display: flex;
             flex-direction: column;
+            position: relative;
         }
 
         .seccion {
@@ -41,11 +41,10 @@
             padding: 0;
             display: block;
             border: none;
-            /* CANDADO 2: Anula la interacción táctil con las imágenes */
             pointer-events: none;
         }
 
-        /* 1. DISEÑO DEL CONTADOR */
+        /* 1. CONTADOR FLOTANTE */
         .contador-flotante {
             position: absolute;
             bottom: 22%; 
@@ -80,21 +79,18 @@
             font-family: 'Arial', sans-serif;
         }
 
-        /* 2. BOTÓN DE UBICACIÓN */
+        /* 2. BOTONES DE UBICACIÓN */
         .btn-ubicacion {
             position: absolute;
-            top: 38%; 
-            left: 80%;
-            transform: translateX(-50%); 
             background-color: #D4AF37; 
             color: #FFFFFF; 
             text-decoration: none;
-            padding: 10px 25px;
+            padding: 8px 20px;
             border-radius: 25px;
             font-family: 'Arial', sans-serif;
             font-weight: bold;
             text-transform: uppercase;
-            font-size: 0.9rem;
+            font-size: 0.85rem;
             box-shadow: 0 4px 10px rgba(0,0,0,0.3);
             z-index: 5;
             white-space: nowrap; 
@@ -102,7 +98,19 @@
             pointer-events: auto; 
         }
 
-        /* 3. SCROLL DE ALUMNOS (SOBRE LA SECCION 6) */
+        .btn-recepcion {
+            top: 38%; 
+            left: 80%;
+            transform: translateX(-50%); 
+        }
+
+        .btn-misa {
+            top: 95%; 
+            left: 80%; 
+            transform: translateX(-50%);
+        }
+
+        /* 3. SCROLL DE ALUMNOS */
         .contenedor-scroll-alumnos {
             position: absolute;
             top: 58%;    
@@ -121,7 +129,6 @@
             border-radius: 4px;
         }
 
-        /* NUEVO DISEÑO DE TEXTO (ALUMNO ARRIBA, PADRINO ABAJO) */
         .alumno-item {
             text-align: center;
             margin-bottom: 12px; 
@@ -130,22 +137,56 @@
 
         .alumno-nombre {
             color: #042a67;
-            font-size: 0.9rem; /* Tamaño reducido */
+            font-size: 0.9rem; 
             font-weight: bold;
             margin: 0;
-            white-space: nowrap; /* Obliga a mantener el nombre en una sola línea */
+            white-space: nowrap; 
         }
 
         .padrino-texto {
-            color: #777777; /* Gris oscuro elegante */
-            font-size: 0.75rem; /* Más pequeño que el nombre */
+            color: #777777; 
+            font-size: 0.75rem; 
             font-style: italic;
-            font-weight: normal; /* Fuente delgada */
-            margin: 2px 0 0 0; /* Ligero margen de separación con el nombre */
+            font-weight: normal; 
+            margin: 2px 0 0 0; 
+        }
+
+        /* =========================================
+           4. BOTÓN REPRODUCTOR FLOTANTE DE MÚSICA
+           ========================================= */
+        .btn-musica-flotante {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            width: 45px;
+            height: 45px;
+            background-color: #D4AF37; /* Dorado coordinado */
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.4);
+            z-index: 100; /* Siempre por encima de todo */
+            cursor: pointer;
+            pointer-events: auto;
+            font-size: 1.2rem;
+            transition: transform 0.2s;
+        }
+
+        .btn-musica-flotante:active {
+            transform: scale(0.9);
         }
     </style>
 </head>
 <body>
+
+    <audio id="musica-fondo" loop>
+        <source src="musica.mp3" type="audio/mpeg">
+    </audio>
+
+    <div class="btn-musica-flotante" id="control-musica" onclick="alternarMusica()">
+        🎵
+    </div>
 
     <div class="canvas-celular">
         
@@ -175,7 +216,12 @@
 
         <div class="seccion">
             <img src="05_recepcion.png" alt="Recepción" onerror="this.src='05_recepcion.jpg'">
-            <a href="https://www.google.com/maps/place/La+Santina+Discoteca/@19.8506617,-97.4957672,17z/data=!3m1!4b1!4m6!3m5!1s0x85da95005bc2ced5:0xc4c0150bff80059!8m2!3d19.8506617!4d-97.4957672!16s%2Fg%2F11n9gr5g7t?entry=ttu&g_ep=EgoyMDI2MDYxMC4wIKXMDSoASAFQAw%3D%3D" target="_blank" class="btn-ubicacion">
+            
+            <a href="https://www.google.com/maps/place/La+Santina+Discoteca/@19.8506617,-97.4957672,17z/data=!3m1!4b1!4m6!3m5!1s0x85da95005bc2ced5:0xc4c0150bff80059!8m2!3d19.8506617!4d-97.4957672!16s%2Fg%2F11n9gr5g7t?entry=ttu&g_ep=EgoyMDI2MDYxMC4wIKXMDSoASAFQAw%3D%3D" target="_blank" class="btn-ubicacion btn-recepcion">
+                📍 Ubicación
+            </a>
+            
+            <a href="https://www.google.com/maps/place/Parroqu%C3%ADa+de+Santa+Mar%C3%ADa+de+la+Asunci%C3%B3n/@19.8500928,-97.4973241,17z/data=!3m1!4b1!4m6!3m5!1s0x85cf001392db96eb:0x54cea84ffda841fd!8m2!3d19.8500928!4d-97.4973241!16s%2Fg%2F1tdh464f?entry=ttu&g_ep=EgoyMDI2MDYxNi4wIKXMDSoASAFQAw%3D%3D" target="_blank" class="btn-ubicacion btn-misa">
                 📍 Ubicación
             </a>
         </div>
@@ -191,10 +237,43 @@
     </div>
 
     <script>
-        // CANDADO 3: Bloqueo global del menú de clic derecho
+        // CANDADO DE SEGURIDAD
         document.addEventListener('contextmenu', event => event.preventDefault());
 
-        // EL CONTADOR (15 DE JULIO A LAS 10:00)
+        // GESTIÓN DEL AUDIO AUTOMÁTICO ANTE INTERACCIÓN
+        const musica = document.getElementById("musica-fondo");
+        const botonMusica = document.getElementById("control-musica");
+
+        function iniciarAudio() {
+            musica.play().then(() => {
+                botonMusica.innerHTML = "🎵";
+                // Una vez encendido, quitamos los escuchadores para que no se reinicie
+                document.removeEventListener('click', iniciarAudio);
+                document.removeEventListener('touchstart', iniciarAudio);
+                window.removeEventListener('scroll', iniciarAudio);
+            }).catch(error => {
+                console.log("El navegador bloqueó el autoplay de sonido, esperando click manual.");
+                botonMusica.innerHTML = "🔇";
+            });
+        }
+
+        // Si el usuario toca o hace scroll en cualquier parte, se activa el audio automáticamente
+        document.addEventListener('click', iniciarAudio);
+        document.addEventListener('touchstart', iniciarAudio);
+        window.addEventListener('scroll', iniciarAudio);
+
+        // Función por si quieren pausar o reanudar manualmente con el botón flotante
+        function alternarMusica() {
+            if (musica.paused) {
+                musica.play();
+                botonMusica.innerHTML = "🎵";
+            } else {
+                musica.pause();
+                botonMusica.innerHTML = "🔇";
+            }
+        }
+
+        // EL CONTADOR
         const targetDate = new Date("July 15, 2026 10:00:00").getTime();
         const updateCountdown = setInterval(() => {
             const now = new Date().getTime();
@@ -216,7 +295,7 @@
             }
         }, 1000);
 
-        // LECTOR AUTOMÁTICO DE EXCEL (CSV) - EN DOS LÍNEAS (ALUMNO / PADRINO)
+        // LECTOR DE EXCEL
         fetch('salon1.csv')
             .then(response => {
                 if (!response.ok) throw new Error("No se encontró el CSV");
@@ -236,19 +315,16 @@
                     const titulo = columnas[1] ? columnas[1].trim() : ""; 
                     const nombrePadrino = columnas[2] ? columnas[2].trim() : "";
 
-                    // Lógica para estructurar el nombre arriba y padrino abajo
                     let itemHTML = `
                         <div class="alumno-item">
                             <p class="alumno-nombre">${alumno}</p>
                     `;
                     
-                    // Solo agrega la línea del padrino si la celda no está vacía
                     if (nombrePadrino) {
                         itemHTML += `<p class="padrino-texto">${titulo}: ${nombrePadrino}</p>`;
                     }
 
                     itemHTML += `</div>`;
-                    
                     cajaAlumnos.innerHTML += itemHTML;
                 }
             })
